@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using DotNetIdentityDemo.Models;
+using Microsoft.AspNet.Identity.EntityFramework;
 
 namespace DotNetIdentityDemo.Controllers
 {
@@ -17,15 +18,17 @@ namespace DotNetIdentityDemo.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
+        private ApplicationRoleManager _roleManager;
 
         public AccountController()
         {
         }
 
-        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager )
+        public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager ,ApplicationRoleManager roleManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
+            RoleManager = roleManager;
         }
 
         public ApplicationSignInManager SignInManager
@@ -50,6 +53,12 @@ namespace DotNetIdentityDemo.Controllers
             {
                 _userManager = value;
             }
+        }
+
+        public ApplicationRoleManager RoleManager
+        {
+            get { return _roleManager ?? HttpContext.GetOwinContext().GetUserManager<ApplicationRoleManager>(); }
+            private set { _roleManager = value; }
         }
 
         //
@@ -156,7 +165,19 @@ namespace DotNetIdentityDemo.Controllers
                 if (result.Succeeded)
                 {
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
-                    
+                    //加入角色
+                    var roleName = "Test";
+                    //判斷角色是否存在
+                    if (!RoleManager.RoleExists(roleName))
+                    {
+                        //角色不存在，建立角色
+                        var role = new MyRole(roleName);
+                        await RoleManager.CreateAsync(role);
+                    }
+                    //使用者加入角色
+                    await UserManager.AddToRoleAsync(user.Id, roleName);
+
+
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // 傳送包含此連結的電子郵件
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);

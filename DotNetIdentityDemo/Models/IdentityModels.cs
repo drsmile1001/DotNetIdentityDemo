@@ -21,7 +21,18 @@ namespace DotNetIdentityDemo.Models
 
     public class MyUserRole : IdentityUserRole<Guid> { }
 
-    public class MyRole : IdentityRole<Guid, MyUserRole> { }
+    public class MyRole : IdentityRole<Guid, MyUserRole>
+    {
+        public MyRole()
+        {
+            Id = Guid.NewGuid();
+        }
+
+        public MyRole(string roleName) : this()
+        {
+            Name = roleName;
+        }
+    }
 
     public class MyClaim : IdentityUserClaim<Guid> { }
 

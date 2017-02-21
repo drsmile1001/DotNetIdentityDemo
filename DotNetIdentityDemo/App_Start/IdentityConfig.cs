@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using System.Web;
 using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.EntityFramework;
 using Microsoft.AspNet.Identity.Owin;
@@ -104,6 +100,19 @@ namespace DotNetIdentityDemo
         public static ApplicationSignInManager Create(IdentityFactoryOptions<ApplicationSignInManager> options, IOwinContext context)
         {
             return new ApplicationSignInManager(context.GetUserManager<ApplicationUserManager>(), context.Authentication);
+        }
+    }
+
+    public class ApplicationRoleManager : RoleManager<MyRole, Guid>
+    {
+        public ApplicationRoleManager(IRoleStore<MyRole, Guid> store) : base(store)
+        {
+        }
+
+        public static ApplicationRoleManager Create(IdentityFactoryOptions<ApplicationRoleManager> options,
+            IOwinContext context)
+        {
+            return new ApplicationRoleManager(new RoleStore<MyRole,Guid,MyUserRole>(context.Get<ApplicationDbContext>()));
         }
     }
 }
